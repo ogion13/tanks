@@ -1,0 +1,457 @@
+﻿<html>
+<head>
+	<title></title>
+</head>
+<body>
+	
+	<canvas id = "canvas1"></canvas>
+	<script type="text/javascript">
+		(function(){
+
+			document.onkeydown = checkKey;
+			var canvas = document.getElementById('canvas1'),
+				enemiKilled,
+				bulletParams = {width:10,height:10,color:"red"},
+				moving={},
+				game,
+				images =["tank.gif","tank1.gif","tank2.gif","tank3.gif"],
+				imagesReady=[],
+				timePlayed=0,
+				map = [
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+       					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        				[2, 2, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 2, 2],
+        				[1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+       					[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    				  ],
+			 	cellSize = 32,
+				ctx = canvas.getContext("2d"),
+				myTank,
+				tankSpeed= 32;
+				enemiTanks = [],
+				enemiBullets = [],
+				myBullets = [],
+				walls = [];
+				for(var i=0; i<images.length; i++){
+					var img = new Image();  // Создание нового объекта изображения
+					var image = images[i];
+					img.src = image;
+					imagesReady.push(img);
+				}
+				for(var i = 0 ; i<12 ; i += 3){
+					var enemiTank = new EnemyTank({x:cellSize*i,y:0},imagesReady)   // создаем противников
+					enemiTanks.push(enemiTank);
+				}
+				
+				myTank = new Tank({x:cellSize*4,y:cellSize*12},imagesReady);
+				
+				
+				for (var i=0, mapLength = map.length; i < mapLength ; i++){      // формироуем массив стен
+					var row = map[i];
+					for(var l = 0, rowLength = row.length; l < rowLength;l++){
+						if(row[l]===1){
+							walls.push({x:cellSize/2*l,y:cellSize/2*i})
+						}
+						else if(row[l]===2){
+							walls.push({x:cellSize/2*l,y:cellSize/2*i,type:"stone"})
+						}
+					}
+				}	
+
+			
+			canvas.width = cellSize*15;
+			canvas.height =  cellSize*13;
+			enemi = setInterval(enemiMove,100);
+			game = setInterval(main,1000/60);
+			var lastTime;
+			function main() {
+    			var now = Date.now();
+    			var timePassed = (now - lastTime) / 1000.0;
+    			
+    			makeMap(timePassed);
+    			//update(dt);
+    			//render();
+
+    			lastTime = now;
+    			
+			};
+			function enemiMove(){
+				for(var i = 0, length = enemiTanks.length; i < length; i++){
+					var tank = enemiTanks[i];
+					tank.shoot();
+					var random = Math.round(Math.random()*3);
+					switch(random){
+						case 0:
+						tank.moveTop();
+						break;
+						case 1:
+						tank.moveDown();
+						break;
+						case 2:
+						tank.moveLeft();
+						break;
+						case 3:
+						tank.moveRight();
+						break;
+					}
+				}
+			}
+			function drawAll(){
+				
+					ctx.drawImage(myTank.currentImg,myTank.x,myTank.y);
+					for(var n = 0 ; n < enemiTanks.length; n++){
+						var tank = enemiTanks[n];
+						ctx.drawImage(tank.currentImg,tank.x,tank.y);
+					}
+					for(var i = 0; i < myBullets.length; i++){
+
+						var bullet = myBullets[i];
+						if(bullet.y<0||bullet.y>cellSize*13||bullet.x<0||bullet.x>cellSize*14){
+							myBullets.splice(i,0);
+							i--;
+							continue;
+						}
+						switch(bullet.direction){
+							case "top":
+							bullet.y -= cellSize/2;
+							break;
+							case "down":
+							bullet.y += cellSize/2;
+							break;
+							case "left":
+							bullet.x -= cellSize/2;
+							break;
+							case "right":
+							bullet.x += cellSize/2;
+							break;
+							
+						}
+						
+						ctx.fillStyle = bulletParams.color; // Закрашиваем пулю что летит
+
+						ctx.fillRect(bullet.x ,bullet.y,bulletParams.width,bulletParams.height);
+
+					}
+					
+			}
+			function checkBulletsCollides(){
+				for(var i = 0; i < myBullets.length;i++){
+						var bullet = myBullets[i];
+						for(var l = 0; l < walls.length; l++){ // проверка попадания в стенку патрона
+							var wall = walls[l];
+							
+							if(boxCollides([bullet.x,bullet.y],[bulletParams.width,bulletParams.height],[wall.x,wall.y],[cellSize/2,cellSize/2])){
+								if(wall.type==="stone"){
+									myBullets.splice(i,1);
+									i--;
+									
+									continue;
+								}
+								myBullets.splice(i,1);
+								walls.splice(l,1);
+								i--;
+								l--; //вернуть индекс обратно так как масив уменьшился
+
+							}
+							
+						}
+						if(!bullet.myBullet){
+							if(boxCollides([bullet.x,bullet.y],[bulletParams.width,bulletParams.height],[myTank.x,myTank.y],[cellSize,cellSize])){
+								alert("УБИТ");
+								clearTimeout(game);
+
+							}
+							continue;
+
+						}
+
+						for(var n = 0; n < enemiTanks.length; n++){// проверка попадания пули в танк
+							var tank = enemiTanks[n];
+							if(boxCollides([bullet.x,bullet.y],[bulletParams.width,bulletParams.height],[tank.x,tank.y],[cellSize,cellSize])){
+								myBullets.splice(i,1);
+								enemiTanks.splice(n,1);
+								n--; //вернуть индекс обратно так как масив уменьшился
+							}
+						}	
+						
+						
+						
+				}
+				
+			}
+			function makeMap(timePassed){
+
+				timePlayed += timePassed;
+				ctx.fillStyle = "gray";
+				ctx.fillRect(0,0,cellSize * 15,cellSize * 13);
+				ctx.fillStyle = "black";
+				ctx.fillRect(0,0,cellSize * 13,cellSize * 13);
+				drawWall();
+				checkMoves(timePassed);
+				drawAll();
+				checkBulletsCollides();
+			}
+			function checkMoves(timePassed){
+				
+				switch(moving.move){
+					case "right":
+					myTank.moveRight(timePassed);
+					break;
+					case "top":
+					myTank.moveTop(timePassed);
+					break;
+					case "left":
+					myTank.moveLeft(timePassed);
+					break;
+					case "down":
+					myTank.moveDown(timePassed);
+					break;
+				}
+				
+				moving.move = "";
+			}
+			function drawWall(){
+				var i ,wallsLength = walls.length;
+				for(i=0; i< wallsLength; i++){
+					var xCoord = walls[i].x,
+						yCoord = walls[i].y;
+						if(walls[i].type ==="stone"){
+							ctx.fillStyle = "gray";
+							ctx.fillRect(xCoord,yCoord,cellSize/2,cellSize/2);
+							ctx.fillStyle = "white";
+							ctx.fillRect(xCoord+4,yCoord+4,cellSize/4,cellSize/4);
+							continue;
+						}
+					ctx.fillStyle = "gray";
+					ctx.fillRect(xCoord,yCoord,cellSize/2,cellSize/2);
+					ctx.fillStyle = "orange";
+					ctx.fillRect(xCoord+2,yCoord+2,5, 3);
+					ctx.fillRect(xCoord+9,yCoord+2,5, 3);
+					ctx.fillRect(xCoord+2,yCoord+6,5, 3);
+					ctx.fillRect(xCoord+9,yCoord+6,5, 3);
+					ctx.fillRect(xCoord+2,yCoord+10,5, 3);
+					ctx.fillRect(xCoord+9,yCoord+10,5, 3);	
+				}
+				
+			}
+			function EnemyTank(position,img){
+				function F(){};
+				F.prototype = new Tank(position,img);
+				F.prototype.makeShoot = function(startX,startY,direction){
+					myBullets.push({x:startX,y:startY,direction:direction,myBullet:false})
+				};
+				F.prototype.chekMove = function(x,y){
+					var i ,wallsLength = walls.length,enemiTanksLength = enemiTanks.length;
+					for(i=0; i< wallsLength; i++){        // проверка не мешают ли стены
+						if(boxCollides([x,y],[cellSize-1,cellSize-1],[walls[i].x,walls[i].y],[cellSize/2,cellSize/2])){ 
+						
+							return true;
+						}
+					}
+					if(boxCollides([x,y],[cellSize-1,cellSize-1],[myTank.x,myTank.y],[cellSize,cellSize])){
+						
+							return true;
+						}
+					for(l=0; l < enemiTanksLength; l++){    // проверка не мешают ли другие танки
+						var tank = enemiTanks[l];
+						if(tank === this){
+							continue;
+						}
+						if(boxCollides([x,y],[cellSize-1,cellSize-1],[tank.x,tank.y],[cellSize,cellSize])){
+						
+							return true;
+						}
+					}
+					return false;
+				}
+				var f = new F();
+				return f;
+			}
+			
+			
+			
+			function Tank(position,img){
+				this.shootReady = true;
+				this.x = position.x;
+				this.y = position.y;
+				this.img = img;
+				this.currentImg = img[0];
+			}
+			
+			Tank.prototype.shoot = function(){
+				var direction;
+				var tank = this;
+				if(!tank.shootReady){
+
+					return;
+				}
+				tank.shootReady = false;
+				setTimeout(function(){tank.shootReady = true},1000);
+				this.shoot(direction);
+				if(this.currentImg === this.img[0]){
+					direction = "top";
+				}
+				else if(this.currentImg === this.img[1]){
+					direction = "down";
+				}
+				else if(this.currentImg === this.img[2]){
+					direction = "left";
+				}
+				else if(this.currentImg === this.img[3]){
+					direction = "right";
+				}
+				startY = this.y+cellSize/3;
+				startX = this.x + cellSize/3;
+				this.makeShoot(startX,startY,direction);
+				}
+			Tank.prototype.makeShoot = function(startX,startY,direction){
+				myBullets.push({x:startX,y:startY,direction:direction,myBullet:true})
+			}
+			Tank.prototype.moveRight = function(movingTime){
+				var x = this.x + 8;
+				
+				this.currentImg = this.img[3];
+				if(x>=cellSize*12){
+					this.x = cellSize*12;
+					return;
+				}
+				var chek = this.chekMove(x , this.y) 
+				if(chek){
+					
+					return;
+				}
+				this.x = x;
+			}
+			Tank.prototype.moveLeft = function(movingTime){
+				var x = this.x - 8;
+				
+				this.currentImg = this.img[2];
+				if(x<=0){
+					this.x = 0;
+					return;
+				}
+				var chek = this.chekMove(x , this.y) 
+				if(chek){
+					
+					return;
+				}
+				this.x = x;
+			} 
+			Tank.prototype.moveTop = function(movingTime){
+				var y = this.y - 8;
+				
+				this.currentImg = this.img[0];
+				if(y<=0){
+					this.y = 0;
+					return;
+				}
+				var chek = this.chekMove(this.x , y) 
+				if(chek){
+					
+					return;
+				}
+				this.y = y;
+			} 
+			Tank.prototype.moveDown = function(movingTime){
+				var y = this.y + 8;
+				
+				this.currentImg = this.img[1];
+				if(y>=cellSize*12){
+					this.y = cellSize*12;
+					return;
+				}
+				var chek = this.chekMove(this.x , y) 
+				if(chek){
+					
+					return;
+				}
+				this.y = y;
+			} 
+			Tank.prototype.chekMove = function(x,y){
+				var i ,wallsLength = walls.length,enemiTanksLength = enemiTanks.length;
+				for(i=0; i< wallsLength; i++){        // проверка не мешают ли стены
+					if(boxCollides([x,y],[cellSize-1,cellSize-1],[walls[i].x,walls[i].y],[cellSize/2,cellSize/2])){ 
+					
+						return true;
+					}
+				}
+				for(l=0; l < enemiTanksLength; l++){    // проверка не мешают ли другие танки
+					var tank = enemiTanks[l];
+					if(boxCollides([x,y],[cellSize-1,cellSize-1],[tank.x,tank.y],[cellSize,cellSize])){
+					
+						return true;
+					}
+				}
+				return false;
+			}
+			function collides(x, y, r, b, x2, y2, r2, b2) {  // Вспомогательная функция для проверки столкновений
+   				 return !(r < x2 || x >= r2 ||
+            	 b < y2 || y >= b2);
+			}
+
+			function boxCollides(pos, size, pos2, size2) {
+
+    			return collides(pos[0], pos[1],
+                    pos[0] + size[0], pos[1] + size[1],		// Вспомогательная функция для проверки столкновений
+                    pos2[0], pos2[1],
+                    pos2[0] + size2[0], pos2[1] + size2[1]);
+			}
+			function checkKey(event){
+				var shoot = false;
+				var move ;
+				if(event.keyCode === 38){
+					move = "top";
+					
+					
+				}
+				if(event.keyCode === 40){
+					move = "down";
+					
+				}
+				if(event.keyCode === 37){
+					
+					move = "left";
+					
+				}
+				if(event.keyCode === 39){
+					move = "right";
+					
+				}
+				if(event.keyCode === 32){
+					myTank.shoot();
+					
+				}
+				moving.shoot = shoot;
+				moving.move = move;
+
+				
+			}
+			main();
+			
+		})()
+
+	</script>
+
+</body>
+</html>

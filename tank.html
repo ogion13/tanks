@@ -1,12 +1,10 @@
-﻿<html>
+<html>
 <head>
 	<title></title>
 </head>
 <body>
-	
 	<canvas id = "canvas1"></canvas>
 	<script type="text/javascript">
-	//исправил
 		(function(){
 
 			document.onkeydown = checkKey;
@@ -60,12 +58,6 @@
 					img.src = image;
 					imagesReady.push(img);
 				}
-				for(var i = 0 ; i<12 ; i += 3){
-					var enemiTank = new EnemyTank({x:cellSize*i,y:0},imagesReady)   // создаем противников
-					enemiTanks.push(enemiTank);
-				}
-				
-				myTank = new Tank({x:cellSize*4,y:cellSize*12},imagesReady);
 				
 				
 				for (var i=0, mapLength = map.length; i < mapLength ; i++){      // формироуем массив стен
@@ -128,12 +120,12 @@
 					for(var i = 0; i < myBullets.length; i++){
 
 						var bullet = myBullets[i];
-						if(bullet.y<0||bullet.y>cellSize*13||bullet.x<0||bullet.x>cellSize*14){
-							myBullets.splice(i,0);
+						if(bullet.y<0||bullet.y>cellSize*13||bullet.x<0||bullet.x>cellSize*13){//проверка не вышла ли пуля за пределы полей
+							myBullets.splice(i,1);
 							i--;
 							continue;
 						}
-						switch(bullet.direction){
+						switch(bullet.direction){ // вычисляем новое положение пули
 							case "top":
 							bullet.y -= cellSize/2;
 							break;
@@ -157,7 +149,7 @@
 					
 			}
 			function checkBulletsCollides(){
-				for(var i = 0; i < myBullets.length;i++){
+				for(var i = 0; i < myBullets.length; i++){
 						var bullet = myBullets[i];
 						for(var l = 0; l < walls.length; l++){ // проверка попадания в стенку патрона
 							var wall = walls[l];
@@ -167,17 +159,16 @@
 									myBullets.splice(i,1);
 									i--;
 									
-									continue;
+									break;
 								}
 								myBullets.splice(i,1);
 								walls.splice(l,1);
-								i--;
 								l--; //вернуть индекс обратно так как масив уменьшился
-
+								continue;
 							}
 							
 						}
-						if(!bullet.myBullet){
+						if(!bullet.myBullet){//если пуля не моя, а противника
 							if(boxCollides([bullet.x,bullet.y],[bulletParams.width,bulletParams.height],[myTank.x,myTank.y],[cellSize,cellSize])){
 								alert("УБИТ");
 								clearTimeout(game);
@@ -256,41 +247,12 @@
 				}
 				
 			}
-			function EnemyTank(position,img){
+			function inherit(Child,Parent){  // вспомогательная функция для наследования
 				function F(){};
-				F.prototype = new Tank(position,img);
-				F.prototype.makeShoot = function(startX,startY,direction){
-					myBullets.push({x:startX,y:startY,direction:direction,myBullet:false})
-				};
-				F.prototype.chekMove = function(x,y){
-					var i ,wallsLength = walls.length,enemiTanksLength = enemiTanks.length;
-					for(i=0; i< wallsLength; i++){        // проверка не мешают ли стены
-						if(boxCollides([x,y],[cellSize-1,cellSize-1],[walls[i].x,walls[i].y],[cellSize/2,cellSize/2])){ 
-						
-							return true;
-						}
-					}
-					if(boxCollides([x,y],[cellSize-1,cellSize-1],[myTank.x,myTank.y],[cellSize,cellSize])){
-						
-							return true;
-						}
-					for(l=0; l < enemiTanksLength; l++){    // проверка не мешают ли другие танки
-						var tank = enemiTanks[l];
-						if(tank === this){
-							continue;
-						}
-						if(boxCollides([x,y],[cellSize-1,cellSize-1],[tank.x,tank.y],[cellSize,cellSize])){
-						
-							return true;
-						}
-					}
-					return false;
-				}
-				var f = new F();
-				return f;
+				F.prototype = Parent.prototype;
+				console.log (F.prototype);
+				Child.prototype = new F();
 			}
-			
-			
 			
 			function Tank(position,img){
 				this.shootReady = true;
@@ -329,6 +291,7 @@
 			Tank.prototype.makeShoot = function(startX,startY,direction){
 				myBullets.push({x:startX,y:startY,direction:direction,myBullet:true})
 			}
+			
 			Tank.prototype.moveRight = function(movingTime){
 				var x = this.x + 8;
 				
@@ -406,6 +369,41 @@
 				}
 				return false;
 			}
+			function EnemyTank(position,img){   //конструктор для танков противника
+				Tank.call(this,position,img);
+				
+			}
+			inherit(EnemyTank,Tank);
+			EnemyTank.prototype.makeShoot = function(startX,startY,direction){
+				myBullets.push({x:startX,y:startY,direction:direction,myBullet:false})
+				};
+			EnemyTank.prototype.chekMove = function(x,y){
+					var i ,wallsLength = walls.length,enemiTanksLength = enemiTanks.length;
+					for(i=0; i< wallsLength; i++){        // проверка не мешают ли стены
+						if(boxCollides([x,y],[cellSize-1,cellSize-1],[walls[i].x,walls[i].y],[cellSize/2,cellSize/2])){ 
+						
+							return true;
+						}
+					}
+					if(boxCollides([x,y],[cellSize-1,cellSize-1],[myTank.x,myTank.y],[cellSize,cellSize])){
+						
+							return true;
+						}
+					for(l=0; l < enemiTanksLength; l++){    // проверка не мешают ли другие танки
+						var tank = enemiTanks[l];
+						if(tank === this){
+							continue;
+						}
+						if(boxCollides([x,y],[cellSize-1,cellSize-1],[tank.x,tank.y],[cellSize,cellSize])){
+						
+							return true;
+						}
+					}
+					return false;
+				}
+			var tank1 = new EnemyTank({x:cellSize*4,y:cellSize*12},imagesReady)	;
+
+				
 			function collides(x, y, r, b, x2, y2, r2, b2) {  // Вспомогательная функция для проверки столкновений
    				 return !(r < x2 || x >= r2 ||
             	 b < y2 || y >= b2);
@@ -448,6 +446,11 @@
 
 				
 			}
+			myTank = new Tank({x:cellSize*4,y:cellSize*12},imagesReady); // cоздаем свой танк
+			for(var i = 0 ; i<12 ; i += 3){
+					var enemiTank = new EnemyTank({x:cellSize*i,y:0},imagesReady)   // создаем противников
+					enemiTanks.push(enemiTank);
+				}
 			main();
 			
 		})()
